@@ -18,7 +18,7 @@ namespace asciiadventure {
         }
 
         private static string Menu() {
-            return "WASD to move\nIJKL to attack/interact\nEnter command: ";
+            return "Get the Treasure\nWASD to move\nIJKL to attack/interact\nWatch out for the traps and moving walls\nReach the pressure plate to stop the moving walls\nEnter command: ";
         }
 
         private static void PrintScreen(Screen screen, string message, string menu) {
@@ -27,6 +27,7 @@ namespace asciiadventure {
             Console.WriteLine($"\n{message}");
             Console.WriteLine($"\n{menu}");
         }
+
         public void Run() {
             Console.ForegroundColor = ConsoleColor.Green;
 
@@ -46,7 +47,7 @@ namespace asciiadventure {
             Treasure treasure = new Treasure(6, 2, screen);
 
             // add a trap at a random location
-            Tuple<int, int> loc = screen.GetLegalRandPlacement(screen);
+            Tuple<int, int> loc = screen.GetLegalRandPlace(screen);
             Trap trap = new Trap(loc.Item1, loc.Item2, screen);
             
 
@@ -57,16 +58,20 @@ namespace asciiadventure {
             //add some special walls
             List<MovingGameObject> movers = new List<MovingGameObject>();
             for (int i = 0; i< 3; i++){
-                Tuple<int, int> locMW = screen.GetLegalRandPlacement(screen);
+                Tuple<int, int> locMW = screen.GetLegalRandPlace(screen);
                 movers.Add(new MovingWall(locMW.Item1, locMW.Item2, screen, i));
             }
+
+            // add the pressure plate
+            Tuple<int, int> locPP = screen.GetLegalRandPlace(screen);
+            PressurePlate pp = new PressurePlate(locPP.Item1, locPP.Item2, screen);
             
             // initially print the game board
             PrintScreen(screen, "Welcome!", Menu());
             
             Boolean gameOver = false;
             
-            while (!gameOver) {
+            while(!gameOver) {
                 char input = Console.ReadKey(true).KeyChar;
 
                 String message = "";
@@ -82,13 +87,13 @@ namespace asciiadventure {
                 } else if (Eq(input, 'd')) {
                     player.Move(0, 1);
                 } else if (Eq(input, 'i')) {
-                    message += player.Action(-1, 0) + "\n";
+                    message += player.Action(-1, 0, ref gameOver) + "\n";
                 } else if (Eq(input, 'k')) {
-                    message += player.Action(1, 0) + "\n";
+                    message += player.Action(1, 0, ref gameOver) + "\n";
                 } else if (Eq(input, 'j')) {
-                    message += player.Action(0, -1) + "\n";
+                    message += player.Action(0, -1, ref gameOver) + "\n";
                 } else if (Eq(input, 'l')) {
-                    message += player.Action(0, 1) + "\n";
+                    message += player.Action(0, 1, ref gameOver) + "\n";
                 } else if (Eq(input, 'v')) {
                     // TODO: handle inventory
                     message = "You have nothing\n";
@@ -97,14 +102,25 @@ namespace asciiadventure {
                 }
 
                 if (screen[trap.Row, trap.Col] is Player){
-                        // The trap got the player!
-                        player.Token = "*";
-                        message += "You have fallen in to a trap and died\nTOO BAD SO SAD...\nGAME OVER";
-                        gameOver = true;
-                    }
+                    // The trap got the player!
+                    player.Token = "*";
+                    message += "You have fallen in to a trap and died\nTOO BAD SO SAD...\nGAME OVER\n";
+                    gameOver = true;
+                }
+
+                else if (screen[pp.Row, pp.Col] is Player){
+                    message = pp.Activate();
+                }
+                else if (screen[treasure.Row, treasure.Col] is Player){ 
+                    message += "Oh no! You crushed the delicate Treasure\nYou must pick it up using IJKL\nGAME OVER!!!!!!!!\n";
+                    gameOver = true;
+                }
+
                 // OK, now move the mobs
-                message += screen.MoveManyRand(mobs, message, ref gameOver);
-                message += screen.MoveManyRand(movers, message, ref gameOver);
+                if (pp.IsMoving){
+                    message += screen.MoveManyRand(movers, ref gameOver);
+                }
+                message += screen.MoveManyRand(mobs, ref gameOver);
                 // foreach (Mob mob in mobs){
                 //     // TODO: Make mobs smarter, so they jump on the player, if it's possible to do so
                 //     List<Tuple<int, int>> moves = screen.GetLegalMoves(mob.Row, mob.Col, mob.Speed);
@@ -128,7 +144,6 @@ namespace asciiadventure {
                 //     }
                 //     mob.Move(deltaRow, deltaCol);
                 // }
-
                 PrintScreen(screen, message, Menu());
             }
         }

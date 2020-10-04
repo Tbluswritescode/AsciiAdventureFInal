@@ -80,6 +80,9 @@ namespace asciiadventure {
                 // can have a "shout" command, so some objects require shouting
                 return "TODO: Handle interaction";
             }
+            if (gameObject is PressurePlate && !(this is Player)){
+                return "";
+            }
             // Now just make the move
             int originalRow = Row;
             int originalCol = Col;
@@ -88,6 +91,7 @@ namespace asciiadventure {
             Col = newCol;
             Screen[originalRow, originalCol] = null;
             Screen[Row, Col] = this;
+            
             return "";
         }
     }
@@ -95,12 +99,29 @@ namespace asciiadventure {
         public Wall(int row, int col, Screen screen) : base(row, col, "=", screen) {}
     }
 
+    class PressurePlate : GameObject{
+        public PressurePlate(int row, int col, Screen screen) : base (row, col, "O", screen) {
+            IsMoving = true;
+        }
+        public Boolean IsMoving{
+            get;
+            protected set;
+        }
+        public string Activate(){
+            IsMoving = false;
+            return "\nYay you stopped the walls from moving!";
+        }
+        public override Boolean IsPassable() {
+            return true;
+        }
+    }
+
     class MovingWall : MovingGameObject {
         public MovingWall(int row, int col, Screen screen, int speed) : base(row, col, "=", screen, speed) {}
     }
 
     class Trap : GameObject{
-        public Trap(int row, int col, Screen screen) : base(row, col, "0", screen) {}
+        public Trap(int row, int col, Screen screen) : base(row, col, " ", screen) {}
         public override Boolean IsPassable() {
             return true;
         }

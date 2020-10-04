@@ -34,10 +34,13 @@ namespace asciiadventure {
             if (other == null){
                 return true;
             }
+            if (other is Trap || other is Treasure){
+                return false;
+            }
             return other.IsPassable() || other is Player;
         }
 
-        public Tuple<int, int> GetLegalRandPlacement(Screen screen){
+        public Tuple<int, int> GetLegalRandPlace(Screen screen){
             int x, y;
             do{
                 y = scrnRand.Next(1, screen.NumRows);
@@ -74,7 +77,7 @@ namespace asciiadventure {
                 grid[row, col] = value;
             }
         }
-        public string MoveManyRand(List<MovingGameObject> objects, string message, ref Boolean gameOver){
+        public string MoveManyRand(List<MovingGameObject> objects, ref Boolean gameOver){
             foreach(MovingGameObject obj in objects){
                 // TODO: Make mobs smarter, so they jump on the player, if it's possible to do so
                 List<Tuple<int, int>> moves = this.GetLegalMoves(obj.Row, obj.Col, obj.Speed);
@@ -93,22 +96,23 @@ namespace asciiadventure {
                     if (this[obj.Row + deltaRow, obj.Col + deltaCol] is Player){
                         // the mob got the player!
                         obj.Token = "*";
-                        message += "A MOB GOT YOU! GAME OVER\n";
                         gameOver = true;
+                        return "A MOB GOT YOU! GAME OVER\n HAHAHAHAHAHAHAHAHAHAHAHAHA!!!!!!\n";
+
                     }
                     obj.Move(deltaRow, deltaCol);
                 }
-                if (obj is MovingWall){
+                else if (obj is MovingWall){
                     if (this[obj.Row + deltaRow, obj.Col + deltaCol] is Player){
                         // the mob got the player!
-                        obj.Token = "0";
-                        message += "YOU WERE CRUSHED BY A WALL\n";
+                        obj.Token = "*";
                         gameOver = true;
+                        return "YOU WERE CRUSHED BY A WALL\n GAME OVER YOU DEAD HOMIE!\n";
                     }
                     obj.Move(deltaRow, deltaCol);
                 }
             }
-            return message;
+            return "";
         }
         protected Boolean CheckRow(int row){
             return row >= 0 && row < NumRows;

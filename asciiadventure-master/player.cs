@@ -13,7 +13,7 @@ namespace asciiadventure {
             return true;
         }
 
-        public String Action(int deltaRow, int deltaCol){
+        public String Action(int deltaRow, int deltaCol, ref Boolean gameOver){
             int newRow = Row + deltaRow;
             int newCol = Col + deltaCol;
             if (!Screen.IsInBounds(newRow, newCol)){
@@ -27,6 +27,7 @@ namespace asciiadventure {
             // TODO: Interact with the object
             if (other is Treasure){
                 other.Delete();
+                gameOver = true;
                 return "Yay, we got the treasure!";
             }
             return "ouch";
