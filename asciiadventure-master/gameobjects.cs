@@ -53,7 +53,10 @@ namespace asciiadventure {
         }
 
         // public MovingGameObject(int row, int col, String token, Screen screen) : base(row, col, token, screen) {}
-
+        /*TBLUS:: added a speed parameter so that in theory mobs could hop and walls could hop.  I decided not to do this because
+            With random movement it made moving around too aggravating to be a good feature.  That being said, I left it in
+            because I do feel like it has the potential to be a useful parameter
+        */
         public MovingGameObject(int row, int col, String token, Screen screen, int speed) : base(row, col, "@", screen) {
             Row = row;
             Col = col;
@@ -104,7 +107,7 @@ namespace asciiadventure {
     }
 
     class PressurePlate : GameObject{
-        public PressurePlate(int row, int col, Screen screen) : base (row, col, "O", screen) {
+        public PressurePlate(int row, int col, Screen screen) : base (row, col, "0", screen) {
             IsMoving = true;
         }
         public Boolean IsMoving{
@@ -128,7 +131,7 @@ namespace asciiadventure {
     }
 
     class Trap : GameObject{
-        public Trap(int row, int col, Screen screen) : base(row, col, "0", screen) {}
+        public Trap(int row, int col, Screen screen) : base(row, col, " ", screen) {}
         public override Boolean IsPassable() {
             return true;
         }

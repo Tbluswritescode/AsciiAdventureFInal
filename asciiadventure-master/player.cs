@@ -28,7 +28,7 @@ namespace asciiadventure {
             if (other is Treasure){
                 other.Delete();
                 gameOver = true;
-                return "Yay, we got the treasure!";
+                return "Yay, we got the treasure! WE WIN!!!";
             }
             if (other is AcidTrigger){
                 DW = true;

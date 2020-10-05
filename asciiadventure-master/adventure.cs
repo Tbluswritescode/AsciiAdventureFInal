@@ -3,9 +3,6 @@ using System.Text;
 using System.Linq;
 using System.Collections.Generic;
 
-//remove speed parameter, everything moves 1 per turn
-//add comments explaining the now defunct speed parameter.
-
 /*
  Cool ass stuff people could implement:
  > jumping
@@ -21,7 +18,7 @@ namespace asciiadventure {
         }
 
         private static string Menu() {
-            return "Get the Treasure\nWASD to move\nIJKL to attack/interact\nWatch out for the traps and moving walls\nReach the pressure plate to stop the moving walls\nEnter command: ";
+            return "Get the Treasure\nWASD to move\nIJKL to attack/interact\nWatch out for the traps and moving walls\nReach the pressure plate (0) to stop the moving walls\nYou can activate (^) the acid wave to try to kill the mobs using IJKL.\nWatch out! Acid can kill you too!(~)\n Win the game by picking up the treasure(T) with IJKL\nEnter command: ";
         }
 
         private static void PrintScreen(Screen screen, string message, string menu) {
@@ -40,7 +37,7 @@ namespace asciiadventure {
                 new Wall(1, 2 + i, screen);
             }
             for (int i=0; i < 4; i++){
-                new Wall(3 + i, 3, screen);
+                new Wall(3 + i, 4, screen);
             }
             
             // add a player
@@ -50,7 +47,7 @@ namespace asciiadventure {
             Treasure treasure = new Treasure(6, 2, screen);
 
             // add the acid wash trigger
-            AcidTrigger acidPlate = new AcidTrigger(2, 7, screen);
+            AcidTrigger acidPlate = new AcidTrigger(7, 5, screen);
 
             // add a trap at a random location
             Tuple<int, int> loc = screen.GetLegalRandPlace(screen);
@@ -65,7 +62,7 @@ namespace asciiadventure {
             List<MovingGameObject> movers = new List<MovingGameObject>();
             for (int i = 0; i< 3; i++){
                 Tuple<int, int> locMW = screen.GetLegalRandPlace(screen);
-                movers.Add(new MovingWall(locMW.Item1, locMW.Item2, screen, i));
+                movers.Add(new MovingWall(locMW.Item1, locMW.Item2, screen, 1));
             }
 
             // add the pressure plate
@@ -85,6 +82,7 @@ namespace asciiadventure {
 
                 String message = "";
                 
+                message += screen.MoveManyRand(acids, ref gameOver, ref dead);
                 if (deathWave){
                     for (int i = 0; i < 4; i++){
                         switch(i){
@@ -92,19 +90,16 @@ namespace asciiadventure {
                                 acids.Add(new Acid(acidPlate.Row-1, acidPlate.Col, screen, 1));
                                 break;
                             case 1:
-                                acids.Add(new Acid(acidPlate.Row+1, acidPlate.Col, screen, 1));
+                                acids.Add(new Acid(acidPlate.Row, acidPlate.Col, screen, 1));
                                 break;
                             case 2:
                                 acids.Add(new Acid(acidPlate.Row, acidPlate.Col-1, screen, 1));
-                                break;
-                            case 3:
-                                acids.Add(new Acid(acidPlate.Row, acidPlate.Col+1, screen, 1));
                                 break;
                             default:
                                 continue;
                         }
                     }
-                }
+                }               
 
                 if (Eq(input, 'q')) {
                     break;
@@ -130,6 +125,7 @@ namespace asciiadventure {
                 } else {
                     message = $"Unknown command: {input}";
                 }
+                
 
                 if (screen[trap.Row, trap.Col] is Player){
                     // The trap got the player!
@@ -154,9 +150,10 @@ namespace asciiadventure {
                 }
                 // OK, now move the mobs
                 message += screen.MoveManyRand(mobs, ref gameOver, ref dead);
-                message += screen.MoveManyRand(acids, ref gameOver, ref dead);
                 if (gameOver&&dead){player.Token = "*";}
                 
+
+                //Moved this entire block of code in to screen.MoveManyRand
                 // foreach (Mob mob in mobs){
                 //     // TODO: Make mobs smarter, so they jump on the player, if it's possible to do so
                 //     List<Tuple<int, int>> moves = screen.GetLegalMoves(mob.Row, mob.Col, mob.Speed);

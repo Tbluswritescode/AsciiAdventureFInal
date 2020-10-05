@@ -117,7 +117,7 @@ namespace asciiadventure {
                         dead = true;
                         obj.Token = "*";
                         obj.Move(deltaRow, deltaCol);
-                        return "YOU WERE CRUSHED BY A WALL\n GAME OVER YOU DEAD HOMIE!\n";
+                        return "YOU WERE CRUSHED BY A WALL\n GAME OVER YOU'RE DEAD!\n";
                     }
                     obj.Move(deltaRow, deltaCol);
                 }
@@ -128,7 +128,7 @@ namespace asciiadventure {
                         dead = true;
                         obj.Token = "*";
                         obj.Move(deltaRow, deltaCol);
-                        return "YOU WERE BURNED BY THE ACID WAVE\n GAME OVER YOU DEAD HOMIE!\n";
+                        return "YOU WERE BURNED BY THE ACID WAVE\n GAME OVER YOU DEAD!\n BROUGHT THAT ON YOURSELF\n";
                     }
                     else if(other is Mob){
                         // the mob got the player!
