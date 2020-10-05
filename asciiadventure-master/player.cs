@@ -13,7 +13,7 @@ namespace asciiadventure {
             return true;
         }
 
-        public String Action(int deltaRow, int deltaCol, ref Boolean gameOver){
+        public String Action(int deltaRow, int deltaCol, ref Boolean gameOver, ref Boolean DW){
             int newRow = Row + deltaRow;
             int newCol = Col + deltaCol;
             if (!Screen.IsInBounds(newRow, newCol)){
@@ -29,6 +29,10 @@ namespace asciiadventure {
                 other.Delete();
                 gameOver = true;
                 return "Yay, we got the treasure!";
+            }
+            if (other is AcidTrigger){
+                DW = true;
+                return "Run! You Triggered the acid wave!";
             }
             return "ouch";
         }

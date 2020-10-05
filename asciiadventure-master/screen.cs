@@ -77,7 +77,7 @@ namespace asciiadventure {
                 grid[row, col] = value;
             }
         }
-        public string MoveManyRand(List<MovingGameObject> objects, ref Boolean gameOver){
+        public string MoveManyRand(List<MovingGameObject> objects, ref Boolean gameOver, ref Boolean dead){
             foreach(MovingGameObject obj in objects){
                 // TODO: Make mobs smarter, so they jump on the player, if it's possible to do so
                 List<Tuple<int, int>> moves = this.GetLegalMoves(obj.Row, obj.Col, obj.Speed);
@@ -90,24 +90,51 @@ namespace asciiadventure {
                 Tuple<int, int> t = moves[scrnRand.Next(moves.Count)];
                 int deltaRow = t.Item1;
                 int deltaCol = t.Item2;
+
+                GameObject other = this[obj.Row + deltaRow, obj.Col + deltaCol];
         
                 // var (deltaRow, deltaCol) = moves[random.Next(moves.Count)];
                 if (obj is Mob){
-                    if (this[obj.Row + deltaRow, obj.Col + deltaCol] is Player){
+                    if (other is Player){
                         // the mob got the player!
-                        obj.Token = "*";
                         gameOver = true;
+                        dead = true;
+                        obj.Token = "*";
+                        obj.Move(deltaRow, deltaCol);
                         return "A MOB GOT YOU! GAME OVER\n HAHAHAHAHAHAHAHAHAHAHAHAHA!!!!!!\n";
 
+                    }
+                    else if (other is Acid){
+                        obj.Delete();
+                        return "YAY THE ACID WAVE KILLED A MOB";
                     }
                     obj.Move(deltaRow, deltaCol);
                 }
                 else if (obj is MovingWall){
-                    if (this[obj.Row + deltaRow, obj.Col + deltaCol] is Player){
+                    if (other is Player){
                         // the mob got the player!
-                        obj.Token = "*";
                         gameOver = true;
+                        dead = true;
+                        obj.Token = "*";
+                        obj.Move(deltaRow, deltaCol);
                         return "YOU WERE CRUSHED BY A WALL\n GAME OVER YOU DEAD HOMIE!\n";
+                    }
+                    obj.Move(deltaRow, deltaCol);
+                }
+                else if(obj is Acid){
+                    if (other is Player){
+                        // the mob got the player!
+                        gameOver = true;
+                        dead = true;
+                        obj.Token = "*";
+                        obj.Move(deltaRow, deltaCol);
+                        return "YOU WERE BURNED BY THE ACID WAVE\n GAME OVER YOU DEAD HOMIE!\n";
+                    }
+                    else if(other is Mob){
+                        // the mob got the player!
+                        this[obj.Row + deltaRow, obj.Col + deltaCol].Delete();
+                        obj.Move(deltaRow, deltaCol);
+                        return "THE ACID WAVE KILLED THE MOB, PROCEED TO GET YOUR TREASURE\nWATCH FOR THE WAVE\n";
                     }
                     obj.Move(deltaRow, deltaCol);
                 }

@@ -99,6 +99,10 @@ namespace asciiadventure {
         public Wall(int row, int col, Screen screen) : base(row, col, "=", screen) {}
     }
 
+    class AcidTrigger : GameObject{
+        public AcidTrigger(int row, int col, Screen screen) : base (row, col, "^", screen){}
+    }
+
     class PressurePlate : GameObject{
         public PressurePlate(int row, int col, Screen screen) : base (row, col, "O", screen) {
             IsMoving = true;
@@ -109,19 +113,22 @@ namespace asciiadventure {
         }
         public string Activate(){
             IsMoving = false;
-            return "\nYay you stopped the walls from moving!";
+            this.Token = "@";
+            return "\nYay you stopped the walls from moving!\n";
         }
         public override Boolean IsPassable() {
             return true;
         }
     }
-
+    class Acid : MovingGameObject {
+        public Acid(int row, int col, Screen screen, int speed) : base(row, col, "~", screen, speed) {}
+    }
     class MovingWall : MovingGameObject {
         public MovingWall(int row, int col, Screen screen, int speed) : base(row, col, "=", screen, speed) {}
     }
 
     class Trap : GameObject{
-        public Trap(int row, int col, Screen screen) : base(row, col, " ", screen) {}
+        public Trap(int row, int col, Screen screen) : base(row, col, "0", screen) {}
         public override Boolean IsPassable() {
             return true;
         }

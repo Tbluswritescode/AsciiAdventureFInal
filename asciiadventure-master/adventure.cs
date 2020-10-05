@@ -3,6 +3,9 @@ using System.Text;
 using System.Linq;
 using System.Collections.Generic;
 
+//remove speed parameter, everything moves 1 per turn
+//add comments explaining the now defunct speed parameter.
+
 /*
  Cool ass stuff people could implement:
  > jumping
@@ -37,7 +40,7 @@ namespace asciiadventure {
                 new Wall(1, 2 + i, screen);
             }
             for (int i=0; i < 4; i++){
-                new Wall(3 + i, 4, screen);
+                new Wall(3 + i, 3, screen);
             }
             
             // add a player
@@ -45,6 +48,9 @@ namespace asciiadventure {
             
             // add a treasure
             Treasure treasure = new Treasure(6, 2, screen);
+
+            // add the acid wash trigger
+            AcidTrigger acidPlate = new AcidTrigger(2, 7, screen);
 
             // add a trap at a random location
             Tuple<int, int> loc = screen.GetLegalRandPlace(screen);
@@ -70,11 +76,35 @@ namespace asciiadventure {
             PrintScreen(screen, "Welcome!", Menu());
             
             Boolean gameOver = false;
+            Boolean dead = false;
+            Boolean deathWave = false;
+            List<MovingGameObject> acids = new List<MovingGameObject>();
             
             while(!gameOver) {
                 char input = Console.ReadKey(true).KeyChar;
 
                 String message = "";
+                
+                if (deathWave){
+                    for (int i = 0; i < 4; i++){
+                        switch(i){
+                            case 0:
+                                acids.Add(new Acid(acidPlate.Row-1, acidPlate.Col, screen, 1));
+                                break;
+                            case 1:
+                                acids.Add(new Acid(acidPlate.Row+1, acidPlate.Col, screen, 1));
+                                break;
+                            case 2:
+                                acids.Add(new Acid(acidPlate.Row, acidPlate.Col-1, screen, 1));
+                                break;
+                            case 3:
+                                acids.Add(new Acid(acidPlate.Row, acidPlate.Col+1, screen, 1));
+                                break;
+                            default:
+                                continue;
+                        }
+                    }
+                }
 
                 if (Eq(input, 'q')) {
                     break;
@@ -87,13 +117,13 @@ namespace asciiadventure {
                 } else if (Eq(input, 'd')) {
                     player.Move(0, 1);
                 } else if (Eq(input, 'i')) {
-                    message += player.Action(-1, 0, ref gameOver) + "\n";
+                    message += player.Action(-1, 0, ref gameOver, ref deathWave) + "\n";
                 } else if (Eq(input, 'k')) {
-                    message += player.Action(1, 0, ref gameOver) + "\n";
+                    message += player.Action(1, 0, ref gameOver, ref deathWave) + "\n";
                 } else if (Eq(input, 'j')) {
-                    message += player.Action(0, -1, ref gameOver) + "\n";
+                    message += player.Action(0, -1, ref gameOver, ref deathWave) + "\n";
                 } else if (Eq(input, 'l')) {
-                    message += player.Action(0, 1, ref gameOver) + "\n";
+                    message += player.Action(0, 1, ref gameOver, ref deathWave) + "\n";
                 } else if (Eq(input, 'v')) {
                     // TODO: handle inventory
                     message = "You have nothing\n";
@@ -105,6 +135,7 @@ namespace asciiadventure {
                     // The trap got the player!
                     player.Token = "*";
                     message += "You have fallen in to a trap and died\nTOO BAD SO SAD...\nGAME OVER\n";
+                    dead = true;
                     gameOver = true;
                 }
 
@@ -116,11 +147,16 @@ namespace asciiadventure {
                     gameOver = true;
                 }
 
-                // OK, now move the mobs
+                
+                // Move the walls if the pressure place has not been activated
                 if (pp.IsMoving){
-                    message += screen.MoveManyRand(movers, ref gameOver);
+                    message += screen.MoveManyRand(movers, ref gameOver, ref dead);
                 }
-                message += screen.MoveManyRand(mobs, ref gameOver);
+                // OK, now move the mobs
+                message += screen.MoveManyRand(mobs, ref gameOver, ref dead);
+                message += screen.MoveManyRand(acids, ref gameOver, ref dead);
+                if (gameOver&&dead){player.Token = "*";}
+                
                 // foreach (Mob mob in mobs){
                 //     // TODO: Make mobs smarter, so they jump on the player, if it's possible to do so
                 //     List<Tuple<int, int>> moves = screen.GetLegalMoves(mob.Row, mob.Col, mob.Speed);
